@@ -1,4 +1,87 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:240541039
+AD-SOYAD:Feleknaz Sanli
 
-Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:ALGORITHM StudyPlanGenerator
+INPUT: 
+    examDate             // sınav tarihi
+    currentDate          // bugünün tarihi
+    topicsList           // çalışılacak konu listesi [Konu1, Konu2, ..., KonuN]
+    dailyStudyHours      // günlük çalışılabilecek maksimum süre (saat)
+    hoursPerTopic        // her konunun yaklaşık çalışma süresi (saat)
+    includeRevisionDays  // tekrar günü istenecek mi? (TRUE/FALSE)
+    revisionRatio        // toplam sürenin yüzde kaçını tekrara ayır (örn: 0.2 → %20)
+    
+OUTPUT:
+    studyPlan            // Günlük çalışma planı (tarih → konular)
+
+BEGIN
+    totalDays ← DateDifference(examDate, currentDate)
+    
+    IF totalDays ≤ 0 THEN
+        PRINT "Hata: Sınav tarihi bugünden önce."
+        EXIT
+    ENDIF
+
+    totalAvailableHours ← totalDays * dailyStudyHours
+
+    totalTopicHours ← Sum(hoursPerTopic for each topic in topicsList)
+
+    IF includeRevisionDays = TRUE THEN
+        revisionHours ← totalAvailableHours * revisionRatio
+        studyHours ← totalAvailableHours - revisionHours
+    ELSE
+        revisionHours ← 0
+        studyHours ← totalAvailableHours
+    ENDIF
+
+    IF studyHours < totalTopicHours THEN
+        PRINT "Uyarı: Konuları bitirmek için yeterli zaman yok."
+        PRINT "Toplam gerekli süre:", totalTopicHours
+        PRINT "Toplam mevcut süre:", studyHours
+        EXIT
+    ENDIF
+
+    studyPlan ← EMPTY_MAP   // tarih → liste[konu, süre]
+
+    // Konuları sırayla yerleştir
+    currentTopicIndex ← 0
+    topicProgress ← 0        // o konudan kaç saat çalışıldı
+
+    FOR day FROM 1 TO totalDays DO
+        currentDate ← AddDaysToDate(currentDate, 1)
+        daySchedule ← EMPTY_LIST
+        remainingTime ← dailyStudyHours
+
+        // Sadece son günlerse tekrar günleri olarak ayır
+        IF includeRevisionDays = TRUE AND day > totalDays * (1 - revisionRatio) THEN
+            daySchedule.APPEND(["Tekrar", remainingTime])
+            studyPlan[currentDate] ← daySchedule
+            CONTINUE
+        ENDIF
+
+        WHILE remainingTime > 0 AND currentTopicIndex < LENGTH(topicsList) DO
+            topic ← topicsList[currentTopicIndex]
+            neededTime ← hoursPerTopic[topic] - topicProgress
+
+            studyTime ← MIN(neededTime, remainingTime)
+
+            daySchedule.APPEND([topic, studyTime])
+
+            topicProgress ← topicProgress + studyTime
+            remainingTime ← remainingTime - studyTime
+
+            IF topicProgress = hoursPerTopic[topic] THEN
+                currentTopicIndex ← currentTopicIndex + 1
+                topicProgress ← 0
+            ENDIF
+        ENDWHILE
+
+        studyPlan[currentDate] ← daySchedule
+    ENDFOR
+
+    PRINT "Çalışma Planı Hazır:"
+    FOR each date IN studyPlan DO
+        PRINT date, "→", studyPlan[date]
+    ENDFOR
+END
+
