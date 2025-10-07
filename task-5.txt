@@ -1,4 +1,30 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:240541039
+AD-SOYAD:Feleknaz Sanli
 
-Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:FUNCTION BinarySearch(A, target)
+INPUT:
+    A       // Sıralı dizi (örneğin artan sırada)
+    target  // Aranan değer
+
+OUTPUT:
+    index   // target’ın A’daki indeksi (bulunamazsa -1)
+
+BEGIN
+    low ← 1
+    high ← LENGTH(A)
+
+    WHILE low ≤ high DO
+        mid ← FLOOR((low + high) / 2)
+
+        IF A[mid] = target THEN
+            RETURN mid            // Bulundu
+        ELSE IF A[mid] < target THEN
+            low ← mid + 1        // Sağ yarıda ara
+        ELSE
+            high ← mid - 1       // Sol yarıda ara
+        ENDIF
+    ENDWHILE
+
+    RETURN -1                   // Bulunamadı
+END
+
