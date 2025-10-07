@@ -1,4 +1,29 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:240541039
+AD-SOYAD:Feleknaz Sanli
 
-Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:ALGORITHM SortGradesDescending
+INPUT:
+    grades[1...N]     // N öğrencinin notlarını içeren dizi
+
+OUTPUT:
+    sortedGrades[1...N]  // Yüksekten düşüğe sıralanmış notlar
+
+BEGIN
+    FOR i FROM 1 TO N - 1 DO
+        maxIndex ← i
+        FOR j FROM i + 1 TO N DO
+            IF grades[j] > grades[maxIndex] THEN
+                maxIndex ← j
+            ENDIF
+        ENDFOR
+
+        // En büyük değeri i. elemanla yer değiştir
+        IF maxIndex ≠ i THEN
+            temp ← grades[i]
+            grades[i] ← grades[maxIndex]
+            grades[maxIndex] ← temp
+        ENDIF
+    ENDFOR
+
+    RETURN grades
+END
