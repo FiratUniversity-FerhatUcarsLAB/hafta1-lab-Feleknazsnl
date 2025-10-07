@@ -1,4 +1,99 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:240541039
+AD-SOYAD:Feleknaz Sanli
 
-Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:ALGORITHM ChooseBestMove
+INPUT:
+    playerState          // Oyuncunun konumu, parası, sahip olduğu mülkler
+    boardState           // Tüm tahta üzerindeki mülklerin durumu
+    otherPlayers         // Diğer oyuncuların durumu
+    diceRoll             // Zar sonucu (tahmini ya da gerçek)
+    gamePhase            // Erken oyun, orta oyun, geç oyun gibi aşamalar
+
+OUTPUT:
+    bestMove             // Önerilen en iyi hamle (örneğin: "Satın Al", "Pas Geç", "Geliştir", "Takas Et")
+
+BEGIN
+
+    // 1. Yeni konumu hesapla
+    newPosition ← (playerState.position + diceRoll) MOD 40
+    currentTile ← boardState[newPosition]
+
+    // 2. Eğer mülk ise ve satın alınabilir durumda ise
+    IF currentTile.type = "property" AND currentTile.owner = NONE THEN
+        // Fiyat uygun mu ve oyuncunun parası yeterli mi?
+        IF playerState.cash >= currentTile.price THEN
+            // Stratejik önemi kontrol et (renk seti tamamlama, kira getirisi, konum)
+            IF IsStrategicallyValuable(currentTile, playerState) THEN
+                RETURN "Satın Al: " + currentTile.name
+            ELSE
+                RETURN "Pas Geç"
+            ENDIF
+        ELSE
+            RETURN "Pas Geç"
+        ENDIF
+
+    // 3. Eğer mülk başka birine aitse
+    ELSE IF currentTile.owner ≠ NONE AND currentTile.owner ≠ playerState.id THEN
+        rent ← CalculateRent(currentTile)
+        IF playerState.cash < rent THEN
+            RETURN "Yüksek Kira Riski - Teminat Sat / Rehin Ver"
+        ELSE
+            RETURN "Kira Öde"
+        ENDIF
+
+    // 4. Eğer kendi mülküne geldi ise
+    ELSE IF currentTile.owner = playerState.id THEN
+        // Geliştirme fırsatını kontrol et
+        IF CanDevelop(currentTile, playerState) THEN
+            IF playerState.cash ≥ DevelopmentCost(currentTile) THEN
+                RETURN "Geliştir: " + currentTile.name
+            ELSE
+                RETURN "Yetersiz Bakiye - Geliştirme Yapma"
+            ENDIF
+        ELSE
+            RETURN "Hiçbir işlem yapma"
+        ENDIF
+
+    // 5. Özel kareler (şans, ceza, hapis, vergi vs.)
+    ELSE IF currentTile.type ∈ ["chance", "community_chest"] THEN
+        card ← DrawCard(currentTile.type)
+        RETURN "Karta göre işlem yap: " + card.description
+
+    ELSE IF currentTile.type = "tax" THEN
+        RETURN "Vergi Öde: " + currentTile.amount
+
+    ELSE IF currentTile.type = "jail" THEN
+        IF playerState.inJail = TRUE THEN
+            RETURN DecideJailExitStrategy(playerState)
+        ELSE
+            RETURN "Sadece Ziyaret"
+        ENDIF
+
+    ELSE
+        RETURN "Hamle yapılamıyor / Bilinmeyen kare"
+
+    ENDIF
+
+    // 6. Ekstra hamle seçenekleri (zorunlu değil)
+    IF CanTrade(playerState, otherPlayers) THEN
+        profitableTrade ← FindProfitableTrade(playerState, otherPlayers)
+        IF profitableTrade ≠ NULL THEN
+            RETURN "Takas Yap: " + profitableTrade.details
+        ENDIF
+    ENDIF
+
+    IF playerState.hasMonopoly THEN
+        developable ← FindDevelopableProperties(playerState)
+        FOR each property IN developable DO
+            IF playerState.cash ≥ DevelopmentCost(property) THEN
+                RETURN "Ev Ekle: " + property.name
+            ENDIF
+        ENDFOR
+    ENDIF
+
+    RETURN "Pas Geç / Zar At"
+
+END
+
+
+
