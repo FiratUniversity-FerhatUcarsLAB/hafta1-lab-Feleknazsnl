@@ -1,4 +1,83 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:240541039
+AD-SOYAD:Feleknaz Sanli
 
-Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:ALGORITHM BuildLegoShape
+INPUT:
+    targetShape[M][N]            // 2D matris: 1 = doldurulması gereken alan
+    legoPiecesList               // Kullanılabilir Lego parçaları listesi [(height, width), ...]
+    
+OUTPUT:
+    placedPiecesList             // Yerleştirilen parçalar: [(piece, posY, posX)]
+    
+BEGIN
+
+    placedPiecesList ← EMPTY_LIST
+
+    FOR y FROM 0 TO M - 1 DO
+        FOR x FROM 0 TO N - 1 DO
+            
+            // Eğer bu hücre zaten kapatılmışsa ya da hedef değilse atla
+            IF targetShape[y][x] ≠ 1 THEN
+                CONTINUE
+            ENDIF
+
+            piecePlaced ← FALSE
+
+            // Tüm parçaları sırayla dene
+            FOR EACH piece IN legoPiecesList DO
+                h ← piece.height
+                w ← piece.width
+
+                IF CanPlacePiece(targetShape, y, x, h, w) THEN
+                    PlacePiece(targetShape, y, x, h, w)
+                    placedPiecesList.APPEND((piece, y, x))
+                    piecePlaced ← TRUE
+                    BREAK
+                ENDIF
+            ENDFOR
+
+            IF piecePlaced = FALSE THEN
+                PRINT "Şekil mevcut parçalarla tamamlanamıyor."
+                RETURN FAILURE
+            ENDIF
+
+        ENDFOR
+    ENDFOR
+
+    PRINT "Şekil başarıyla oluşturuldu!"
+    RETURN placedPiecesList
+
+END
+
+
+// Parça belirtilen konuma yerleştirilebilir mi?
+FUNCTION CanPlacePiece(matrix, startY, startX, height, width)
+BEGIN
+    FOR dy FROM 0 TO height - 1 DO
+        FOR dx FROM 0 TO width - 1 DO
+            y ← startY + dy
+            x ← startX + dx
+
+            IF y ≥ M OR x ≥ N THEN
+                RETURN FALSE  // Taşma
+            ENDIF
+
+            IF matrix[y][x] ≠ 1 THEN
+                RETURN FALSE  // Boş alan değil veya zaten dolu
+            ENDIF
+        ENDFOR
+    ENDFOR
+
+    RETURN TRUE
+END
+
+// Matriste parçayı yerleştir (1 → 2 ile işaretlenmiş dolu parça anlamına gelir)
+PROCEDURE PlacePiece(matrix, startY, startX, height, width)
+BEGIN
+    FOR dy FROM 0 TO height - 1 DO
+        FOR dx FROM 0 TO width - 1 DO
+            matrix[startY + dy][startX + dx] ← 2
+        ENDFOR
+    ENDFOR
+END
+
